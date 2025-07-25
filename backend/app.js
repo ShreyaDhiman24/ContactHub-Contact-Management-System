@@ -1,7 +1,15 @@
 const express = require("express");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
-const connectDB = require("./config/db");
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("MongoDB connected");
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+};
 
 const auth = require("./middlewares/auth");
 const app = express();
