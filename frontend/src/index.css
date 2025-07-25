@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+:root{
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+@theme {
+  --color-primary-white: #F5F5F5;
+  --color-primary-teal: #48CFCB;
+  --color-dark-teal: #229799;
+  --color-dark-grey: #424242;
+}
