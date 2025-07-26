@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import apiConnect from "../utils/apiConnect";
 import ToastContext from "../context/ToastContext";
+import ClipLoader from "react-spinners/ClipLoader"; // ⬅️ Import spinner
 
-const AddEditContact = ({ isOpen, onClose, onSubmit, contact }) => {
+const AddEditContact = ({ isOpen, onClose, handleSubmit, contact }) => {
   const { toast } = useContext(ToastContext);
   const [form, setForm] = useState({
     name: "",
@@ -11,6 +12,10 @@ const AddEditContact = ({ isOpen, onClose, onSubmit, contact }) => {
     phone: "",
   });
 
+  
+
+  const [loading, setLoading] = useState(false); // ⬅️ Loading state
+
   useEffect(() => {
     if (contact) {
       setForm({
@@ -18,7 +23,7 @@ const AddEditContact = ({ isOpen, onClose, onSubmit, contact }) => {
         name: contact.name || "",
         address: contact.address || "",
         email: contact.email || "",
-        phone: contact.phone?.toString() || "", // ensure it's a string
+        phone: contact.phone?.toString() || "",
       });
     } else {
       setForm({
@@ -32,40 +37,6 @@ const AddEditContact = ({ isOpen, onClose, onSubmit, contact }) => {
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      let data;
-      if (contact) {
-        // UPDATE existing contact
-        data = await apiConnect.put(`/contact/${contact._id}`, form, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-      } else {
-        // ADD new contact
-        data = await apiConnect.post("/contact", form, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-      }
-
-      toast.success("New Contact Added!");
-      onSubmit(true);
-      setForm({
-        name: "",
-        address: "",
-        email: "",
-        phone: "",
-      });
-      onClose(); // Close the modal/form
-    } catch (err) {
-      toast.error("Error submitting contact");
-      console.error("Error submitting contact:", err);
-      onSubmit(false);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -81,7 +52,7 @@ const AddEditContact = ({ isOpen, onClose, onSubmit, contact }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <input
             type="text"
             name="name"
@@ -118,11 +89,20 @@ const AddEditContact = ({ isOpen, onClose, onSubmit, contact }) => {
             placeholder="Phone (7–15 digits)"
             className="w-full border px-3 py-2 rounded"
           />
+
           <button
             type="submit"
-            className="w-full bg-[#229799] hover:bg-[#1f8c8d] text-white py-2 rounded"
+            disabled={loading}
+            className={`w-full flex justify-center items-center gap-2 bg-[#229799] hover:bg-[#1f8c8d] text-white py-2 rounded ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
           >
-            {contact ? "Update" : "Save"}
+            {loading ? (
+              <>
+                <ClipLoader size={20} color="#fff" />
+                Saving...
+              </>
+            ) : (
+              contact ? "Update" : "Save"
+            )}
           </button>
         </form>
       </div>

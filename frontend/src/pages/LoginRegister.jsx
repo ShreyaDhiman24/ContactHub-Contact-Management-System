@@ -83,7 +83,6 @@ const LoginRegisterModal = ({ isOpen, onClose }) => {
       onClose(); // Close modal on success
     } catch (error) {
       setError(error.message);
-      toast.error(error.message || "Something went wrong");
     }
   };
 

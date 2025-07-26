@@ -34,7 +34,10 @@ export const AuthContextProvider = ({ children }) => {
     setIsCheckingAuth(true);
 
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      setIsCheckingAuth(false);
+      return;
+    }
 
     try {
       const user = await apiConnect.get("/me", {
@@ -44,13 +47,14 @@ export const AuthContextProvider = ({ children }) => {
       });
       setUser(user);
     } catch (error) {
-      if (error.response?.status === 401 || error.response?.status === 403) {
+      if (error.status === 401 || error.status === 403) {
         toast.error("Session expired. Please log in again.");
       } else {
         toast.error(
           error.message || "Something went wrong while checking login."
         );
       }
+
       localStorage.removeItem("token");
       setUser(null);
     } finally {

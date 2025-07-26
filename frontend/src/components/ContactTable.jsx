@@ -1,23 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   HiChevronLeft,
   HiChevronRight,
   HiPencil,
   HiTrash,
 } from "react-icons/hi2";
-import { Link } from "react-router-dom";
 import DeleteConfirmPopup from "../pages/DeleteConfirmPopup";
 import AddEditContact from "../pages/AddEditContact";
 import apiConnect from "../utils/apiConnect"; // adjust path as needed
-
-const dummyContacts = Array.from({ length: 30 }, (_, i) => ({
-  id: i + 1,
-  firstName: `First${i + 1}`,
-  lastName: `Last${i + 1}`,
-  address: `Address ${i + 1}`,
-  email: `user${i + 1}@example.com`,
-  phone: `98765${10000 + i}`,
-}));
 
 const ContactTable = () => {
   const [contacts, setContacts] = useState([]);
@@ -27,6 +17,7 @@ const ContactTable = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [selectedContactData, setSelectedContactData] = useState(null);
+  const [refreshFlag, setRefreshFlag] = useState(false);
 
   const totalPages = Math.ceil(contacts.length / pageSize);
   const indexOfFirst = (currentPage - 1) * pageSize;
@@ -63,18 +54,45 @@ const ContactTable = () => {
     setCurrentPage(1);
   };
 
-  const handleFormSubmit = async (didChange) => {
-    if (didChange) {
-      await fetchContacts(); 
-    }
-    setShowFormModal(false);
-    setSelectedContactId(null);
-    setSelectedContactData(null);
-  };
-
   const openDeleteModal = (id) => {
     setSelectedContactId(id);
     setShowDeleteModal(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true); // Start loading
+
+    try {
+      let data;
+      const headers = {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      };
+
+      if (contact) {
+        data = await apiConnect.put(`/contact/${contact._id}`, form, {
+          headers,
+        });
+      } else {
+        data = await apiConnect.post("/contact", form, { headers });
+      }
+
+      toast.success(contact ? "Contact Updated!" : "New Contact Added!");
+
+      setForm({
+        name: "",
+        address: "",
+        email: "",
+        phone: "",
+      });
+      fetchContacts();
+      onClose(); // Close modal
+    } catch (err) {
+      console.error("Error submitting contact:", err);
+      toast.error("Failed to save contact.");
+    } finally {
+      setLoading(false); // Stop loading
+    }
   };
 
   const handleDelete = async () => {
@@ -200,7 +218,7 @@ const ContactTable = () => {
         isOpen={showFormModal}
         contact={selectedContactData}
         onClose={() => setShowFormModal(false)}
-        onSubmit={handleFormSubmit}
+        handleSubmit={handleSubmit}
       />
 
       {/* Confirm Delete */}

@@ -3,7 +3,7 @@ const router = require("express").Router();
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const auth = require("../middlewares/auth")
+const auth = require("../middlewares/auth");
 
 router.post("/register", async (req, res) => {
   const { firstname, lastname, email, password } = req.body;
@@ -103,7 +103,7 @@ router.post("/login", async (req, res) => {
       expiresIn: "1h",
     });
 
-    const user = {...userAlreadyExist._doc, password: undefined}
+    const user = { ...userAlreadyExist._doc, password: undefined };
     return res.status(200).json({ token, user });
   } catch (error) {
     console.log(error);
@@ -111,8 +111,8 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get("/me", auth, async(req, res) => {
-  return res.status(200).json({...req.user._doc});
-})
+router.get("/me", auth, async (req, res) => {
+  return res.status(200).json({ ...req.user._doc });
+});
 
 module.exports = router;

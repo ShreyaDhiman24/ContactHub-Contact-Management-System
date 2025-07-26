@@ -31,7 +31,7 @@ const NavBar = ({ setShowLoginModal }) => {
 
             {/* Nav Links */}
             <div className="flex items-center space-x-4">
-              <SearchBar />
+              {user && <SearchBar /> }
 
               {user ? (
                 <>
