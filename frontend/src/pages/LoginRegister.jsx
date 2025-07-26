@@ -59,7 +59,6 @@ const LoginRegisterModal = ({ isOpen, onClose }) => {
           toast.success("Logged in successfully!");
         } else {
           setError(response.error);
-          setError(null);
         }
       } else {
         const response = await registerUser({

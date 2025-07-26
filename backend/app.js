@@ -17,7 +17,11 @@ const app = express();
 // middlewares
 app.use(express.json());
 app.use(morgan("tiny"));
-app.use(require("cors")());
+app.use(require("cors")({
+  origin: "https://contact-ms-m4dr.vercel.app/", // or "*"
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
 // routes
 app.get("/protected", auth, (req, res) => {
