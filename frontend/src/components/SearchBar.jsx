@@ -1,18 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HiMagnifyingGlass, HiMiniXMark } from "react-icons/hi2";
+import apiConnect from "../utils/apiConnect"; // adjust path as needed
 
-const SearchBar = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+const SearchBar = ({ setSearchTerm }) => {
+  const [contacts, setContacts] = useState([]);
+  // const [searchTerm, setSearchTerm] = useState("");
+  const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSearchToggle = () => {
     setIsOpen(!isOpen);
+    setInputValue("");
     setSearchTerm("");
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setIsOpen(false);
+    setSearchTerm(inputValue); // Pass the value up to parent
+    // setIsOpen(false);
   };
 
   return (
@@ -25,8 +30,8 @@ const SearchBar = () => {
           <input
             type="text"
             placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             className="text-gray-800 px-2 py-1 w-48 sm:w-64 focus:outline-none rounded-l-lg"
           />
           <button
@@ -46,7 +51,7 @@ const SearchBar = () => {
       ) : (
         <button
           onClick={handleSearchToggle}
-          className="text-white hover:text-gray-200"
+          className="text-[#1f8c8d] hover:text-gray-200"
         >
           <HiMagnifyingGlass className="h-6 w-6" />
         </button>

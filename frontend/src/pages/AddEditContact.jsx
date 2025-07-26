@@ -3,7 +3,7 @@ import apiConnect from "../utils/apiConnect";
 import ToastContext from "../context/ToastContext";
 import ClipLoader from "react-spinners/ClipLoader"; // ⬅️ Import spinner
 
-const AddEditContact = ({ isOpen, onClose, handleSubmit, contact }) => {
+const AddEditContact = ({ isOpen, onClose, contact }) => {
   const { toast } = useContext(ToastContext);
   const [form, setForm] = useState({
     name: "",
@@ -11,8 +11,6 @@ const AddEditContact = ({ isOpen, onClose, handleSubmit, contact }) => {
     email: "",
     phone: "",
   });
-
-  
 
   const [loading, setLoading] = useState(false); // ⬅️ Loading state
 
@@ -37,6 +35,46 @@ const AddEditContact = ({ isOpen, onClose, handleSubmit, contact }) => {
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true); // Start loading
+
+    try {
+      let data;
+      if (contact) {
+        // UPDATE existing contact
+        data = await apiConnect.put(`/contact/${contact._id}`, form, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+      } else {
+        // ADD new contact
+        data = await apiConnect.post("/contact", form, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+      }
+      window.location.reload();
+      toast.success(contact ? "Contact Updated!" : "New Contact Added!");
+
+      setForm({
+        name: "",
+        address: "",
+        email: "",
+        phone: "",
+      });
+
+      onClose(); // Close modal
+    } catch (err) {
+      console.error("Error submitting contact:", err);
+      toast.error("Failed to save contact.");
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -93,15 +131,19 @@ const AddEditContact = ({ isOpen, onClose, handleSubmit, contact }) => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full flex justify-center items-center gap-2 bg-[#229799] hover:bg-[#1f8c8d] text-white py-2 rounded ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
+            className={`w-full flex justify-center items-center gap-2 bg-[#229799] hover:bg-[#1f8c8d] text-white py-2 rounded ${
+              loading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
           >
             {loading ? (
               <>
                 <ClipLoader size={20} color="#fff" />
                 Saving...
               </>
+            ) : contact ? (
+              "Update"
             ) : (
-              contact ? "Update" : "Save"
+              "Save"
             )}
           </button>
         </form>

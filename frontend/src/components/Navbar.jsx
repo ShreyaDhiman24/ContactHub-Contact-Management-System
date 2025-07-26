@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import SearchBar from "./SearchBar";
 import logo from "../assets/logo.png";
 import { HiOutlineUserCircle } from "react-icons/hi2";
 import { useState, useContext } from "react";
@@ -31,8 +30,6 @@ const NavBar = ({ setShowLoginModal }) => {
 
             {/* Nav Links */}
             <div className="flex items-center space-x-4">
-              {user && <SearchBar /> }
-
               {user ? (
                 <>
                   <button

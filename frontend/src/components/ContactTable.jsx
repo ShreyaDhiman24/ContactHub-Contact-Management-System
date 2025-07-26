@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   HiChevronLeft,
   HiChevronRight,
@@ -8,8 +8,11 @@ import {
 import DeleteConfirmPopup from "../pages/DeleteConfirmPopup";
 import AddEditContact from "../pages/AddEditContact";
 import apiConnect from "../utils/apiConnect"; // adjust path as needed
+import AuthContext from "../context/AuthContext";
+import SearchBar from "./SearchBar";
 
 const ContactTable = () => {
+  const { user } = useContext(AuthContext);
   const [contacts, setContacts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -17,12 +20,13 @@ const ContactTable = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [selectedContactData, setSelectedContactData] = useState(null);
-  const [refreshFlag, setRefreshFlag] = useState(false);
+  const [filteredContacts, setFilteredContacts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const totalPages = Math.ceil(contacts.length / pageSize);
   const indexOfFirst = (currentPage - 1) * pageSize;
   const indexOfLast = currentPage * pageSize;
-  const currentContacts = contacts.slice(indexOfFirst, indexOfLast);
+const currentContacts = filteredContacts.slice(indexOfFirst, indexOfLast);
 
   const fetchContacts = async () => {
     try {
@@ -32,6 +36,7 @@ const ContactTable = () => {
         },
       });
       setContacts(data.contacts || []);
+      setFilteredContacts(data.contacts || []);
     } catch (err) {
       console.error("Error fetching contacts:", err);
     }
@@ -40,6 +45,14 @@ const ContactTable = () => {
   useEffect(() => {
     fetchContacts();
   }, []);
+
+  useEffect(() => {
+    const result = contacts.filter((contact) =>
+      contact.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredContacts(result);
+     setCurrentPage(1); 
+  }, [searchTerm, contacts]);
 
   const handlePrev = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -57,42 +70,6 @@ const ContactTable = () => {
   const openDeleteModal = (id) => {
     setSelectedContactId(id);
     setShowDeleteModal(true);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true); // Start loading
-
-    try {
-      let data;
-      const headers = {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      };
-
-      if (contact) {
-        data = await apiConnect.put(`/contact/${contact._id}`, form, {
-          headers,
-        });
-      } else {
-        data = await apiConnect.post("/contact", form, { headers });
-      }
-
-      toast.success(contact ? "Contact Updated!" : "New Contact Added!");
-
-      setForm({
-        name: "",
-        address: "",
-        email: "",
-        phone: "",
-      });
-      fetchContacts();
-      onClose(); // Close modal
-    } catch (err) {
-      console.error("Error submitting contact:", err);
-      toast.error("Failed to save contact.");
-    } finally {
-      setLoading(false); // Stop loading
-    }
   };
 
   const handleDelete = async () => {
@@ -114,49 +91,7 @@ const ContactTable = () => {
       {/* Top Controls: Page size + Pagination icons */}
       <div className="flex flex-wrap justify-between items-center mb-3 gap-3">
         <h2 className="text-xl font-semibold text-[#229799]">Contact List</h2>
-
-        <div className="flex items-center space-x-4">
-          {/* Page size dropdown */}
-          <div className="flex items-center space-x-2">
-            <label
-              htmlFor="pageSize"
-              className="text-sm font-medium text-gray-700"
-            >
-              Show Top:
-            </label>
-            <select
-              id="pageSize"
-              value={pageSize}
-              onChange={handlePageSizeChange}
-              className="border border-gray-300 rounded px-2 py-1 text-sm"
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={30}>30</option>
-            </select>
-          </div>
-
-          {/* Prev/Next Icons */}
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handlePrev}
-              disabled={currentPage === 1}
-              className="p-2 rounded-full bg-gray-100 text-gray-600 disabled:opacity-40"
-              title="Previous"
-            >
-              <HiChevronLeft className="h-5 w-5" />
-            </button>
-
-            <button
-              onClick={handleNext}
-              disabled={currentPage === totalPages}
-              className="p-2 rounded-full bg-gray-100 text-gray-600 disabled:opacity-40"
-              title="Next"
-            >
-              <HiChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
+        {user && <SearchBar setSearchTerm={setSearchTerm} />}
       </div>
 
       {/* Contact Table */}
@@ -207,10 +142,53 @@ const ContactTable = () => {
         </tbody>
       </table>
 
-      {/* Page Info */}
-      <div className="flex justify-center items-center mt-4 text-sm text-gray-600">
-        Page <strong className="mx-1">{currentPage}</strong> of{" "}
-        <strong className="ml-1">{totalPages}</strong>
+      {/* Page Controls & Pagination */}
+      <div className="flex justify-between items-center mt-4 text-sm text-gray-600 w-full">
+        {/* Left: Page Size Dropdown */}
+        <div className="flex items-center space-x-2">
+          <label
+            htmlFor="pageSize"
+            className="text-sm font-medium text-gray-700"
+          >
+            Show Top:
+          </label>
+          <select
+            id="pageSize"
+            value={pageSize}
+            onChange={handlePageSizeChange}
+            className="border border-gray-300 rounded px-2 py-1 text-sm"
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={30}>30</option>
+          </select>
+        </div>
+
+        {/* Center: Pagination */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-3">
+          <button
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+            className="p-2 rounded-full bg-gray-100 text-gray-600 disabled:opacity-40"
+            title="Previous"
+          >
+            <HiChevronLeft className="h-5 w-5" />
+          </button>
+
+          <span className="text-sm font-medium text-gray-700">
+            Page <strong className="mx-1">{currentPage}</strong> of{" "}
+            <strong>{totalPages}</strong>
+          </span>
+
+          <button
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-full bg-gray-100 text-gray-600 disabled:opacity-40"
+            title="Next"
+          >
+            <HiChevronRight className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       {/* Edit Contact */}
@@ -218,7 +196,6 @@ const ContactTable = () => {
         isOpen={showFormModal}
         contact={selectedContactData}
         onClose={() => setShowFormModal(false)}
-        handleSubmit={handleSubmit}
       />
 
       {/* Confirm Delete */}
