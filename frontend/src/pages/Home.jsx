@@ -3,14 +3,25 @@ import ContactTable from "../components/ContactTable";
 import AddEditContact from "./AddEditContact";
 import AuthContext from "../context/AuthContext";
 import LandingPage from "./LandingPage";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const Home = ({ setShowLoginModal }) => {
-  const { user } = useContext(AuthContext);
+  const { user, isCheckingAuth } = useContext(AuthContext);
   const [showFormModal, setShowFormModal] = useState(false);
 
   const handleFormSubmit = (formData) => {
     setShowFormModal(false);
   };
+
+
+  // 🔄 Show loader while auth check is in progress
+  if (isCheckingAuth) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <ClipLoader size={50} color="#229799" />
+      </div>
+    );
+  }
 
   if (!user) return <LandingPage setShowLoginModal={setShowLoginModal} />;
 

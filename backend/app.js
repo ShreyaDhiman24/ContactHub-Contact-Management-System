@@ -17,11 +17,17 @@ const app = express();
 // middlewares
 app.use(express.json());
 app.use(morgan("tiny"));
-app.use(require("cors")({
-  origin: "https://contact-ms-m4dr.vercel.app/", // or "*"
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+const cors = require("cors");
+
+app.use(
+  cors({
+    origin: ["https://contact-ms-m4dr.vercel.app", "http://localhost:5173"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // ✅ include OPTIONS
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // ✅ optional: allow cookies/auth headers if needed
+  })
+);
+
 
 // routes
 app.get("/protected", auth, (req, res) => {
