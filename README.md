@@ -39,5 +39,6 @@ A full-stack web application to manage personal contacts with authentication, bu
 * 🌐 CORS-enabled Frontend–Backend Communication
 
 ---
-<img width="1889" height="817" alt="image" src="https://github.com/user-attachments/assets/d71af1e8-7e96-4019-882f-753206709496" />
+<img width="1905" height="987" alt="image" src="https://github.com/user-attachments/assets/22d0849d-6a32-4d41-96d9-a5b2406e720c" />
+
 
